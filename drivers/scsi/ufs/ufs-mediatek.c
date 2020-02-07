@@ -1562,6 +1562,15 @@ static int ufs_mtk_pre_link(struct ufs_hba *hba)
 	if (ret)
 		return ret;
 
+	/*
+	 * Setting PA_Local_TX_LCC_Enable to 0 before link startup
+	 * to make sure that both host and device TX LCC are disabled
+	 * once link startup is completed.
+	 */
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(PA_LOCAL_TX_LCC_ENABLE), 0);
+	if (ret)
+		return ret;
+
 	/* disable deep stall */
 	ret = ufshcd_dme_get(hba, UIC_ARG_MIB(VS_SAVEPOWERCONTROL), &tmp);
 	if (ret)
