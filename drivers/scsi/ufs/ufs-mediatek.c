@@ -1978,7 +1978,7 @@ static bool ufs_mtk_has_ufshci_perf_heuristic(struct ufs_hba *hba) {
 		&& (host->cfg->quirks & UFS_MTK_HOST_QUIRK_UFS_HCI_PERF_HEURISTIC));
 }
 
-/**
+/*
  * struct ufs_hba_mtk_vops - UFS MTK specific variant operations
  *
  * The variant operations configure the necessary controller and PHY
