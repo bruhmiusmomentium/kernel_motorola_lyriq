@@ -2053,6 +2053,35 @@ static int ufs_mtk_probe(struct platform_device *pdev)
 	int err;
 	int boot_type;
 	struct device *dev = &pdev->dev;
+	struct device_node *reset_node;
+	struct platform_device *reset_pdev;
+	struct device_link *link;
+
+	reset_node = of_find_compatible_node(NULL, NULL,
+					     "ti,syscon-reset");
+	if (!reset_node) {
+		dev_notice(dev, "find ti,syscon-reset fail\n");
+		err = -ENODEV;
+		goto out;
+	}
+	reset_pdev = of_find_device_by_node(reset_node);
+	if (!reset_pdev) {
+		dev_notice(dev, "find reset_pdev fail\n");
+		err = -ENODEV;
+		goto out;
+	}
+	link = device_link_add(dev, &reset_pdev->dev,
+		DL_FLAG_AUTOPROBE_CONSUMER);
+	if (!link) {
+		dev_notice(dev, "add reset device_link fail\n");
+		err = -ENODEV;
+		goto out;
+	}
+	/* supplier is not probed */
+	if (link->status == DL_STATE_DORMANT) {
+		err = -EPROBE_DEFER;
+		goto out;
+	}
 
 	/* Add get_boot_type check and return ENODEV if not ufs boot */
 	boot_type = ufs_mtk_get_boot_type();
@@ -2061,6 +2090,8 @@ static int ufs_mtk_probe(struct platform_device *pdev)
 
 	/* perform generic probe */
 	err = ufshcd_pltfrm_init(pdev, &ufs_hba_mtk_vops);
+
+out:
 	if (err)
 		dev_info(dev, "probe failed %d\n", err);
 
