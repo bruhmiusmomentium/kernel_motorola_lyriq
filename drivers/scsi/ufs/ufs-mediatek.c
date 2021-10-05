@@ -1892,6 +1892,14 @@ static void ufs_mtk_event_notify(struct ufs_hba *hba,
 		return;
 
 	trace_ufs_mtk_event(evt, val);
+
+	/*
+	 * After error handling of ufshcd_host_reset_and_restore
+	 * Bypass clear ua to send scsi command request sense, else
+	 * deadlock hang because scsi is waiting error handling done.
+	 */
+	if (evt == UFS_EVT_HOST_RESET)
+		hba->wlun_dev_clr_ua = false;
 }
 
 static void ufs_mtk_setup_xfer_req(struct ufs_hba *hba, int tag,
